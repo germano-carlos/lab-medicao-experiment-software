@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>lab_01</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GraphQL" Version="4.5.0" />
+    <PackageReference Include="GraphQL.DataLoader" Version="4.5.0" />
+    <PackageReference Include="GraphQL.MemoryCache" Version="4.5.0" />
+    <PackageReference Include="GraphQL.MicrosoftDI" Version="4.5.0" />
+    <PackageReference Include="GraphQL.NewtonsoftJson" Version="4.5.0" />
+    <PackageReference Include="GraphQL.SystemReactive" Version="4.5.0" />
+    <PackageReference Include="GraphQL.SystemTextJson" Version="4.5.0" />
+    <PackageReference Include="RestSharp" Version="106.12.0" />
+  </ItemGroup>
+
+</Project>

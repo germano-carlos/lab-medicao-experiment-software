@@ -1,0 +1,15 @@
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\bin\Debug\net5.0\lab-2.exe
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\bin\Debug\net5.0\lab-2.deps.json
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\bin\Debug\net5.0\lab-2.runtimeconfig.json
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\bin\Debug\net5.0\lab-2.runtimeconfig.dev.json
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\bin\Debug\net5.0\lab-2.dll
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\bin\Debug\net5.0\ref\lab-2.dll
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\bin\Debug\net5.0\lab-2.pdb
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\obj\Debug\net5.0\lab-2.GeneratedMSBuildEditorConfig.editorconfig
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\obj\Debug\net5.0\lab-2.AssemblyInfoInputs.cache
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\obj\Debug\net5.0\lab-2.AssemblyInfo.cs
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\obj\Debug\net5.0\lab-2.csproj.CoreCompileInputs.cache
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\obj\Debug\net5.0\lab-2.dll
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\obj\Debug\net5.0\ref\lab-2.dll
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\obj\Debug\net5.0\lab-2.pdb
+G:\www\faculdade\lab-medicao-experiment-software\lab-2\obj\Debug\net5.0\lab-2.genruntimeconfig.cache
