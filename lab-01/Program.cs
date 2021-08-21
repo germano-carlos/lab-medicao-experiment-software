@@ -5,12 +5,23 @@ using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using lab_01.Entities;
 using Newtonsoft.Json;
+using CsvHelper;
 
 namespace lab_01
 {
+    public class Project
+    {
+        public string CustomerName { get; set; }
+        public string Title { get; set; }
+        public DateTime Deadline { get; set; }
+    }
+    
     class Program
     {
         public static void Main(string[] args)
@@ -69,7 +80,8 @@ namespace lab_01
             return GitHubAPI.Request<GitHubResult>(query);
         }
 
-        public static List<Nodes> BuscaRepositoriosPaginados(int pageSize, int? qntElements = null, int? pageAmount = null)
+        public static List<Nodes> BuscaRepositoriosPaginados(int pageSize, int? qntElements = null,
+            int? pageAmount = null)
         {
             List<Nodes> repositorios = new List<Nodes>();
             int contador = 1;
@@ -77,8 +89,8 @@ namespace lab_01
             var x = BuscaRepositorios(false, pageSize);
             repositorios.AddRange(x.nodes);
             while (
-                x.pageInfo.hasNextPage && 
-                (!pageAmount.HasValue || contador < pageAmount.Value) && 
+                x.pageInfo.hasNextPage &&
+                (!pageAmount.HasValue || contador < pageAmount.Value) &&
                 (!qntElements.HasValue || repositorios.Count < qntElements.Value)
             )
             {
@@ -90,11 +102,23 @@ namespace lab_01
                 ++contador;
             }
 
+            ProcessarDados(repositorios);
             CriaCSV(repositorios);
             return repositorios;
         }
 
         private static void CriaCSV(List<Nodes> repositorios)
+        {
+            var parent = Directory.GetParent(Directory.GetCurrentDirectory());
+            var directory = parent?.Parent?.Parent?.FullName;
+            using (var writer = new StreamWriter($"{directory}\\csv-repository-files.csv"))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                csv.WriteRecords(repositorios);
+            }
+        }
+
+        private static void ProcessarDados(List<Nodes> repositorios)
         {
             
         }

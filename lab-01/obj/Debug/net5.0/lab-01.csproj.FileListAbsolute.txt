@@ -72,3 +72,4 @@ C:\www\pessoal\lab-medicao-experiment-software\lab-01\obj\Debug\net5.0\lab-01.dl
 C:\www\pessoal\lab-medicao-experiment-software\lab-01\obj\Debug\net5.0\ref\lab-01.dll
 C:\www\pessoal\lab-medicao-experiment-software\lab-01\obj\Debug\net5.0\lab-01.pdb
 C:\www\pessoal\lab-medicao-experiment-software\lab-01\obj\Debug\net5.0\lab-01.genruntimeconfig.cache
+C:\www\pessoal\lab-medicao-experiment-software\lab-01\bin\Debug\net5.0\CsvHelper.dll

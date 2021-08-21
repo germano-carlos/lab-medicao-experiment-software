@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "+gdoMHc+WJeDBNyp/g7N6JwGUnRfgV+/sas/WqVAIwYoRN5UbAxZetl4JMulpkLGlgQBLABwaSMLwTHXkPYvKw==",
+  "dgSpecHash": "Ud+5Z7Qzbxlgt8ViEsBDFdZefOHeNNXDWJ/zbD9A5q4zILqR3ZJ++eFZIcp44T3uPsWoRah66iolN+4qk1thUA==",
   "success": true,
   "projectFilePath": "C:\\www\\pessoal\\lab-medicao-experiment-software\\lab-01\\lab-01.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\carlo\\.nuget\\packages\\csvhelper\\27.1.1\\csvhelper.27.1.1.nupkg.sha512",
     "C:\\Users\\carlo\\.nuget\\packages\\graphql\\4.5.0\\graphql.4.5.0.nupkg.sha512",
     "C:\\Users\\carlo\\.nuget\\packages\\graphql-parser\\7.1.0\\graphql-parser.7.1.0.nupkg.sha512",
     "C:\\Users\\carlo\\.nuget\\packages\\graphql.dataloader\\4.5.0\\graphql.dataloader.4.5.0.nupkg.sha512",
