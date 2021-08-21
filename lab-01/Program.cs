@@ -21,16 +21,22 @@ namespace lab_01
 
         public static void Run()
         {
-            var ListaCompleta = new List<GitHubResult>();
-            var list = BuscaRepositorios();
-
+            var list = BuscaRepositoriosPaginados(100, 152);
             Console.WriteLine(list.ToString());
         }
 
-        public static List<GitHubResult> BuscaRepositorios(int quantidade = 100)
+        public static GitHubResult BuscaRepositorios(bool hasNext, int quantidade = 100, string cursorP = "")
         {
+            string cursor = ", after: null";
+            if (hasNext)
+                cursor = $", after: \"{cursorP}\"";
+
             string query = @"{
-                search (query: ""stars:>100"", type:REPOSITORY, first:" + quantidade + @") {
+                search (query: ""stars:>100"", type:REPOSITORY, first:" + quantidade + cursor + @" ) {
+                    pageInfo {
+                          hasNextPage
+                          endCursor
+                    }
                     nodes {
                         ... on Repository {
                             nameWithOwner
@@ -43,7 +49,7 @@ namespace lab_01
                             releases(first:1) {
                                 totalCount
                             }
-                            stargazers {
+                            stargazers(orderBy: {field: STARRED_AT, direction: DESC}) {
                                 totalCount
                             }
                             primaryLanguage {
@@ -59,10 +65,36 @@ namespace lab_01
                     }
                 }
             }";
-            return GitHubAPI.Request<List<GitHubResult>>(query);
+
+            return GitHubAPI.Request<GitHubResult>(query);
         }
 
-        public static void BuscaRepositoriosPaginados(int pageSize)
+        public static List<Nodes> BuscaRepositoriosPaginados(int pageSize, int? qntElements = null, int? pageAmount = null)
+        {
+            List<Nodes> repositorios = new List<Nodes>();
+            int contador = 1;
+
+            var x = BuscaRepositorios(false, pageSize);
+            repositorios.AddRange(x.nodes);
+            while (
+                x.pageInfo.hasNextPage && 
+                (!pageAmount.HasValue || contador < pageAmount.Value) && 
+                (!qntElements.HasValue || repositorios.Count < qntElements.Value)
+            )
+            {
+                if (qntElements.HasValue && repositorios.Count + pageSize > qntElements.Value)
+                    pageSize = qntElements.Value - repositorios.Count;
+
+                x = BuscaRepositorios(true, pageSize, x.pageInfo.endCursor);
+                repositorios.AddRange(x.nodes);
+                ++contador;
+            }
+
+            CriaCSV(repositorios);
+            return repositorios;
+        }
+
+        private static void CriaCSV(List<Nodes> repositorios)
         {
             
         }

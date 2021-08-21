@@ -2,7 +2,7 @@
 {
     public class PageInfo
     {
-        public string hasPreviousPage { get; set; }
+        public bool hasNextPage { get; set; }
         public string endCursor { get; set; }
     }
 }
