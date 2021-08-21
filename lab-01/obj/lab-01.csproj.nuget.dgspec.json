@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "G:\\www\\faculdade\\lab-medicao-experiment-software\\lab-01\\lab-01.csproj": {}
+    "C:\\www\\pessoal\\lab-medicao-experiment-software\\lab-01\\lab-01.csproj": {}
   },
   "projects": {
-    "G:\\www\\faculdade\\lab-medicao-experiment-software\\lab-01\\lab-01.csproj": {
+    "C:\\www\\pessoal\\lab-medicao-experiment-software\\lab-01\\lab-01.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "G:\\www\\faculdade\\lab-medicao-experiment-software\\lab-01\\lab-01.csproj",
+        "projectUniqueName": "C:\\www\\pessoal\\lab-medicao-experiment-software\\lab-01\\lab-01.csproj",
         "projectName": "lab-01",
-        "projectPath": "G:\\www\\faculdade\\lab-medicao-experiment-software\\lab-01\\lab-01.csproj",
-        "packagesPath": "C:\\Users\\Carlos\\.nuget\\packages\\",
-        "outputPath": "G:\\www\\faculdade\\lab-medicao-experiment-software\\lab-01\\obj\\",
+        "projectPath": "C:\\www\\pessoal\\lab-medicao-experiment-software\\lab-01\\lab-01.csproj",
+        "packagesPath": "C:\\Users\\carlo\\.nuget\\packages\\",
+        "outputPath": "C:\\www\\pessoal\\lab-medicao-experiment-software\\lab-01\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Carlos\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\carlo\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -89,7 +89,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.300\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     }

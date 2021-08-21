@@ -8,19 +8,19 @@
     "net5.0": []
   },
   "packageFolders": {
-    "C:\\Users\\Carlos\\.nuget\\packages\\": {}
+    "C:\\Users\\carlo\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "G:\\www\\faculdade\\lab-medicao-experiment-software\\lab-2\\lab-2.csproj",
+      "projectUniqueName": "C:\\www\\pessoal\\lab-medicao-experiment-software\\lab-2\\lab-2.csproj",
       "projectName": "lab-2",
-      "projectPath": "G:\\www\\faculdade\\lab-medicao-experiment-software\\lab-2\\lab-2.csproj",
-      "packagesPath": "C:\\Users\\Carlos\\.nuget\\packages\\",
-      "outputPath": "G:\\www\\faculdade\\lab-medicao-experiment-software\\lab-2\\obj\\",
+      "projectPath": "C:\\www\\pessoal\\lab-medicao-experiment-software\\lab-2\\lab-2.csproj",
+      "packagesPath": "C:\\Users\\carlo\\.nuget\\packages\\",
+      "outputPath": "C:\\www\\pessoal\\lab-medicao-experiment-software\\lab-2\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Carlos\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\carlo\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -61,7 +61,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.300\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.400\\RuntimeIdentifierGraph.json"
       }
     }
   }
