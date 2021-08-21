@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
@@ -18,19 +18,25 @@ namespace lab_01
         {
             JObject j = new JObject();
             j["query"] = query;
-
-            var client = new RestClient(_url);
-            client.Timeout = -1;
-            var request = new RestRequest(Method.POST);
-            request.AddHeader("Authorization", _token);
-            request.AddHeader("Content-Type", "application/json");
-            request.AddParameter("application/json", j.ToString(), ParameterType.RequestBody);
-            IRestResponse response = client.Execute(request);
+            try
+            {
+                var client = new RestClient(_url);
+                client.Timeout = -1;
+                var request = new RestRequest(Method.POST);
+                request.AddHeader("Authorization", _token);
+                request.AddHeader("Content-Type", "application/json");
+                request.AddParameter("application/json", j.ToString(), ParameterType.RequestBody);
+                IRestResponse response = client.Execute(request);
             
-            JObject value = JsonConvert.DeserializeObject<JObject>(response.Content);
-            if (value["data"]?["search"] == null)
-                throw new Exception("Não foi localizado nenhum registro para a consulta realizada");
-            return JsonConvert.DeserializeObject<T>(value["data"]?["search"].ToString());
+                JObject value = JsonConvert.DeserializeObject<JObject>(response.Content);
+                if (value["data"]?["search"] == null)
+                    throw new Exception("Não foi localizado nenhum registro para a consulta realizada");
+                return JsonConvert.DeserializeObject<T>(value["data"]?["search"].ToString());
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Houve um erro ao processar a requisição na API GITHUB [{e.Message}]");
+            }
         }
     }
 }
