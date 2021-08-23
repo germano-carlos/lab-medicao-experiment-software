@@ -32,7 +32,7 @@ namespace lab_01
 
         public static void Run()
         {
-            var list = BuscaRepositoriosPaginados(100, 152);
+            var list = BuscaRepositoriosPaginados(100, 1000);
             Console.WriteLine(list.ToString());
         }
 
