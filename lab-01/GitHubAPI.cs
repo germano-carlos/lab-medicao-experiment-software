@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
@@ -29,6 +29,8 @@ namespace lab_01
                 IRestResponse response = client.Execute(request);
             
                 JObject value = JsonConvert.DeserializeObject<JObject>(response.Content);
+                if (value["error"] != null)
+                    throw new Exception(value["error"].ToString());
                 if (value["data"]?["search"] == null)
                     throw new Exception("Não foi localizado nenhum registro para a consulta realizada");
                 return JsonConvert.DeserializeObject<T>(value["data"]?["search"].ToString());
