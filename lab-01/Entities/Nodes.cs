@@ -8,7 +8,7 @@ namespace lab_01.Entities
         public string nameWithOwner { get; set; }
         public string url { get; set; }
         public DateTime createdAt { get; set; }
-        public string updatedAt { get; set; }
+        public DateTime updatedAt { get; set; }
         public PullRequest pullRequests { get; set; }
         public Release releases { get; set; }
         public Star stargazers { get; set; }

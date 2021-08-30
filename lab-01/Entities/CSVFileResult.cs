@@ -8,7 +8,7 @@ namespace lab_01.Entities
         public DateTime RepositoyCreatedAt { get; set; }
         public long PullRequestCount { get; set; }
         public long ReleasesCount { get; set; }
-        public DateTime LastUpdate { get; set; }
+        public double LastUpdate { get; set; }
         public string PrimaryLanguage { get; set; }
         public long IssuesCount { get; set; }
         public long ClosedIssuesCount { get; set; }

@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace lab_01
 {
-    class GitHubAPI
+    public class GitHubAPI
     {
         protected static string _url = "https://api.github.com/graphql";
-        protected static string _token = "bearer ";
+        protected static string _token = "bearer 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";
 
         public static T Request<T>(string query)
         {
@@ -29,8 +29,8 @@ namespace lab_01
                 IRestResponse response = client.Execute(request);
             
                 JObject value = JsonConvert.DeserializeObject<JObject>(response.Content);
-                if (value["error"] != null)
-                    throw new Exception(value["error"].ToString());
+                if (value["errors"] != null)
+                    throw new Exception(value["errors"].ToString());
                 if (value["data"]?["search"] == null)
                     throw new Exception("Não foi localizado nenhum registro para a consulta realizada");
                 return JsonConvert.DeserializeObject<T>(value["data"]?["search"].ToString());

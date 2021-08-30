@@ -1,25 +1,29 @@
 ﻿using System;
+using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace lab_01
 {
-    public class Project
-    {
-        public string CustomerName { get; set; }
-        public string Title { get; set; }
-        public DateTime Deadline { get; set; }
-    }
-    
     class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            Run();
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-BR");
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo("pt-BR");
+            
+            //Caso queira iniciar um novo arquivo CSV, remover este comentário !
+            /*Run();*/
+
+            await Lab01BL.SumarizacaoFinal();
+
             Console.ReadKey();
         }
 
         public static void Run()
         {
             //Busca um total de 1000 repositorios, a cada 100x
-            Lab01BL.BuscaRepositoriosPaginados(100, 1000);
+            Lab01BL.BuscaRepositoriosPaginados(50, 1000);
         }
     }
 }
