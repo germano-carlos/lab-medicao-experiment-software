@@ -9,6 +9,8 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using lab_02.Entities;
 using lab_02.Utils;
+using LibGit2Sharp;
+using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 
 namespace lab_02
@@ -134,6 +136,7 @@ namespace lab_02
                     ReleasesCount = repositorio.releases.totalCount,
                     PrimaryLanguage = repositorio.primaryLanguage?.name,
                     RepositoryUrl = repositorio.url,
+                    RepositoryClone = repositorio.url + ".git",
                     RepositoryOwner = repositorio.nameWithOwner,
                     StarsCount = repositorio.stargazers.totalCount,
                     SourceLinesOfCode = null
@@ -153,9 +156,112 @@ namespace lab_02
             return csv.GetRecords<CSVFileResult>().ToList();
         }
 
-        public static void Sumarizacao()
+        public static void Sumarizacao(int? indexOf = null, int? specificElement = null)
         {
             var repositorios = LerCSV();
+            if (indexOf.HasValue)
+                repositorios = repositorios.GetRange(indexOf.Value, repositorios.Count - indexOf.Value);
+            if (specificElement.HasValue)
+                repositorios = new List<CSVFileResult> { repositorios.ElementAt(specificElement.Value) };
+
+            foreach (var repo in repositorios)
+            {
+                // Clone
+                GitClone(repo);
+                //Execute Jar File
+                // XXXX
+                // Delete Folder
+                DeleteFolder(repo);
+            }
+        }
+
+        public static void GitClone(CSVFileResult repositorio)
+        {
+            if (String.IsNullOrEmpty(repositorio.RepositoryClone) || !repositorio.RepositoryClone.EndsWith(".git"))
+                throw new Exception("É Necessário possuir um endereço de clone valido");
+
+            string pathToSave = $"C:\\www\\temp\\repositorios\\{repositorio.RepositoryOwner.Split('/').Last()}";
+            string gitCommand = "git";
+            string gitCloneArgument = $"clone {repositorio.RepositoryClone} {pathToSave}";
+
+            Process.Start(gitCommand, gitCloneArgument);
+            System.Threading.Thread.Sleep(new TimeSpan(0,0,30));
+        }
+
+        public static bool ExecuteJarFile()
+        {
+            var validJavaAppRun = true;
+
+            try
+            {
+                string JDKpath = "", jarFile = "", aParamsInput = "", aParamOutput = "", autonetCol = "";
+                Process process = new Process();
+                process.StartInfo.WorkingDirectory = System.IO.Path.GetDirectoryName(JDKpath) ?? string.Empty;
+                process.StartInfo.FileName = (JDKpath) + "Java";
+                string aArgument = $"{jarFile} {aParamsInput} {aParamOutput} {autonetCol}";
+                process.StartInfo.Arguments = string.Format(aArgument);
+                process.StartInfo.UseShellExecute = false;
+                process.Start();
+                process.WaitForExit();
+         
+                int holdStatus = process.ExitCode;
+
+                if (holdStatus > 0)
+                {
+                    validJavaAppRun = false;
+                }
+         
+            }
+            catch (Exception ex)
+            {
+                if (ex.StackTrace is not null)
+                    Console.WriteLine("Exception Occurred :{0},{1}", ex.Message, ex.StackTrace);
+                validJavaAppRun = false;
+            }
+     
+            return validJavaAppRun;
+        }
+
+        public static void DeleteFolder(CSVFileResult repositorio)
+        {
+            try
+            {
+                var dir = new DirectoryInfo($"C:\\www\\temp\\repositorios\\") { Attributes = FileAttributes.Normal };;
+                foreach (var info in dir.GetFileSystemInfos("*", SearchOption.AllDirectories))
+                {
+                    info.Attributes = FileAttributes.Normal;
+                }
+
+                dir.Delete(true);
+            }
+            catch (IOException ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        
+        public static void RecursiveDelete(DirectoryInfo baseDir)
+        {
+            if (!baseDir.Exists)
+                return;
+
+            foreach (var dir in baseDir.EnumerateDirectories())
+            {
+                RecursiveDelete(dir);
+            }
+            baseDir.Delete(true);
+        }
+        public static void setAttributesNormal(System.IO.DirectoryInfo directory)
+        {
+            foreach (var subDirectoryPath in directory.GetDirectories())
+            {
+                var directoryInfo = new DirectoryInfo(subDirectoryPath.ToString());
+                foreach (var filePath in directoryInfo.GetFiles()) 
+                {
+                    var file = new FileInfo(filePath.ToString());
+                    file.Attributes = FileAttributes.Normal;
+                }
+            }
         }
     }
 }

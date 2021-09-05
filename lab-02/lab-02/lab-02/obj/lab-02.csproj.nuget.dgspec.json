@@ -45,6 +45,10 @@
               "target": "Package",
               "version": "[27.1.1, )"
             },
+            "LibGit2Sharp": {
+              "target": "Package",
+              "version": "[0.26.2, )"
+            },
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[9.0.1, )"
