@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CsvHelper;
+using CsvHelper.Configuration;
 using lab_02.Entities;
 using lab_02.Utils;
 using Newtonsoft.Json;
@@ -19,41 +20,47 @@ namespace lab_02
             string cursor = ", after: null";
             if (hasNext)
                 cursor = $", after: \"{cursorP}\"";
-
-            string query = @"{
-                search (query: ""stars:>100"", type:REPOSITORY, first:" + quantidade + cursor + @" ) {
-                    pageInfo {
-                          hasNextPage
-                          endCursor
+            string query = @"
+            {
+              java: search(query: ""language:java"", type: REPOSITORY, first:" + quantidade + cursor + @") {
+                        pageInfo {
+                            hasNextPage
+                                endCursor
+                        }
+                        ...SearchResult
                     }
-                    nodes {
-                        ... on Repository {
-                            nameWithOwner
-                            url
-                            createdAt
-                            updatedAt
-                            pullRequests(states:MERGED) {
-                                totalCount
-                            }
-                            releases(first:1) {
-                                totalCount
-                            }
-                            stargazers(orderBy: {field: STARRED_AT, direction: DESC}) {
-                                totalCount
-                            }
-                            primaryLanguage {
-                                name
-                            }
-                            open: issues(states:OPEN) {
-                                totalCount
-                            }
-                            closed: issues(states:CLOSED) {
-                                totalCount
-                            }
+                }
+
+                fragment SearchResult on SearchResultItemConnection {
+                  repositoryCount
+                  nodes {
+                      ... on Repository {
+                        nameWithOwner
+                        url
+                        createdAt
+                        updatedAt
+                        pullRequests(states: MERGED) {
+                          totalCount
+                        }
+                        releases(first: 1) {
+                          totalCount
+                        }
+                        stargazers(orderBy: {field: STARRED_AT, direction: DESC}) {
+                          totalCount
+                        }
+                        primaryLanguage {
+                          name
+                        }
+                        open: issues(states: OPEN) {
+                          totalCount
+                        }
+                        closed: issues(states: CLOSED) {
+                          totalCount
                         }
                     }
                 }
             }";
+            
 
             return GitHubAPI.Request<GitHubResult>(query);
         }
@@ -65,12 +72,11 @@ namespace lab_02
                 throw new Exception("Você deve especificar um total de 100 repositorios por busca no máximo !");
 
             List<Nodes> repositorios = new List<Nodes>();
-            List<CSVFileResult> sumary = new List<CSVFileResult>();
             int contador = 1;
 
             var x = BuscaRepositorios(false, pageSize);
             repositorios.AddRange(x.nodes);
-            sumary.AddRange(ProcessarDados(x.nodes));
+            CriaCSV(ProcessarDados(x.nodes), true);
             while (
                 x.pageInfo.hasNextPage &&
                 (!pageAmount.HasValue || contador < pageAmount.Value) &&
@@ -82,21 +88,36 @@ namespace lab_02
 
                 x = BuscaRepositorios(true, pageSize, x.pageInfo.endCursor);
                 repositorios.AddRange(x.nodes);
-                sumary.AddRange(ProcessarDados(x.nodes));
+                CriaCSV(ProcessarDados(x.nodes), false);
                 ++contador;
             }
-
-            CriaCSV(sumary);
+            
             return repositorios;
         }
 
-        private static void CriaCSV(List<CSVFileResult> repositorios)
+        private static void CriaCSV(List<CSVFileResult> repositorios, bool isFirst)
         {
             var parent = Directory.GetParent(Directory.GetCurrentDirectory());
             var directory = parent?.Parent?.Parent?.FullName;
-            using (var writer = new StreamWriter($"{directory}\\csv-repository-files.csv"))
-            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            string file = $"{directory}\\csv-repository-files.csv";
+
+            if (isFirst)
             {
+                using var writer = new StreamWriter(file);
+                using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+                csv.WriteRecords(repositorios);
+
+                return;
+            }
+
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                HasHeaderRecord = false,
+            };
+            using var stream = File.Open(file, FileMode.Append);
+            {
+                using var writer = new StreamWriter(stream);
+                using var csv = new CsvWriter(writer, config);
                 csv.WriteRecords(repositorios);
             }
         }
@@ -106,24 +127,16 @@ namespace lab_02
             var results = new List<CSVFileResult>();
             foreach (var repositorio in repositorios)
             {
-                double issuesResolved = 0.0;
-                if (repositorio.open.totalCount + repositorio.closed.totalCount != 0)
-                    issuesResolved = (repositorio.closed.totalCount * 1.0) /
-                                     (repositorio.open.totalCount + repositorio.closed.totalCount);
-
                 results.Add(new CSVFileResult()
                 {
                     RepositoryAge = DateTime.Now.Year - repositorio.createdAt.Year,
                     RepositoyCreatedAt = repositorio.createdAt,
-                    PullRequestCount = repositorio.pullRequests.totalCount,
                     ReleasesCount = repositorio.releases.totalCount,
-                    LastUpdate = DateTime.Now.Subtract(repositorio.updatedAt).TotalMinutes,
                     PrimaryLanguage = repositorio.primaryLanguage?.name,
-                    IssuesCount = repositorio.closed.totalCount + repositorio.open.totalCount,
-                    ClosedIssuesCount = repositorio.closed.totalCount,
-                    OpenIssuesCount = repositorio.open.totalCount,
-                    IssuesResolved = issuesResolved,
-                    RepositoryUrl = repositorio.url
+                    RepositoryUrl = repositorio.url,
+                    RepositoryOwner = repositorio.nameWithOwner,
+                    StarsCount = repositorio.stargazers.totalCount,
+                    SourceLinesOfCode = null
                 });
             }
 
@@ -139,8 +152,10 @@ namespace lab_02
             
             return csv.GetRecords<CSVFileResult>().ToList();
         }
-        public static async Task SumarizacaoFinal()
+
+        public static void Sumarizacao()
         {
+            var repositorios = LerCSV();
         }
     }
 }

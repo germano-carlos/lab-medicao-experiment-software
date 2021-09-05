@@ -9,7 +9,7 @@ namespace lab_02.Utils
     public class GitHubAPI
     {
         protected static string _url = "https://api.github.com/graphql";
-        protected static string _token = "bearer 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";
+        protected static string _token = "bearer ";
 
         public static T Request<T>(string query)
         {
@@ -28,9 +28,9 @@ namespace lab_02.Utils
                 JObject value = JsonConvert.DeserializeObject<JObject>(response.Content);
                 if (value["errors"] != null)
                     throw new Exception(value["errors"].ToString());
-                if (value["data"]?["search"] == null)
+                if (value["data"]?["java"] == null)
                     throw new Exception("Não foi localizado nenhum registro para a consulta realizada");
-                return JsonConvert.DeserializeObject<T>(value["data"]?["search"].ToString());
+                return JsonConvert.DeserializeObject<T>(value["data"]?["java"].ToString());
             }
             catch (Exception e)
             {
