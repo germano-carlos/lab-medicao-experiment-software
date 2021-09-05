@@ -9,7 +9,7 @@ namespace lab_02.Utils
     public class GitHubAPI
     {
         protected static string _url = "https://api.github.com/graphql";
-        protected static string _token = "bearer ";
+        protected static string _token = $"bearer {Environment.GetEnvironmentVariable("GitHubToken")}";
 
         public static T Request<T>(string query)
         {

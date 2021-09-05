@@ -16,7 +16,7 @@ namespace lab_02
 
             if (op != "0")
                 Debug.WriteLine(JsonConvert.SerializeObject(Lab02BL.BuscaRepositoriosPaginados(50, 1000), Formatting.Indented));
-            Lab02BL.Sumarizacao(60, null);
+            Lab02BL.Sumarizacao(60, 60);
         }
     }
 }
