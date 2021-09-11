@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -156,15 +157,48 @@ namespace lab_02
             return csv.GetRecords<CSVFileResult>().ToList();
         }
 
-        public static void Sumarizacao(int? indexOf = null, int? specificElement = null)
+        public static async Task Sumarizacao(int? indexOf = null, int? specificElement = null)
         {
             var repositorios = LerCSV();
-            if (indexOf.HasValue)
-                repositorios = repositorios.GetRange(indexOf.Value, repositorios.Count - indexOf.Value);
-            if (specificElement.HasValue)
-                repositorios = new List<CSVFileResult> { repositorios.ElementAt(specificElement.Value) };
+            var tasks = new List<Task<DataSumarized>>();
+            var data = new List<List<CSVFileResult>>();
 
-            int contador = 0;
+            if (indexOf.HasValue)
+            {
+                repositorios = repositorios.GetRange(indexOf.Value, repositorios.Count - indexOf.Value);
+                tasks.Add(Task.Run(() => GenerateMetricsAsync(repositorios)));
+            }
+            else if (specificElement.HasValue)
+            {
+                repositorios = new List<CSVFileResult> { repositorios.ElementAt(specificElement.Value) };
+                tasks.Add(Task.Run(() => GenerateMetricsAsync(repositorios)));
+            }
+            else
+            {
+                if(repositorios.Count is < 1000 or > 1000)
+                    throw new Exception("É necessário possuir exatamente 1000 repositórios para realização da análise");
+
+                data.Add(repositorios.GetRange(0,200));
+                data.Add(repositorios.GetRange(200,200));
+                data.Add(repositorios.GetRange(400,200));
+                data.Add(repositorios.GetRange(600,200));
+                data.Add(repositorios.GetRange(800,200));
+            
+                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(0))));
+                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(1))));
+                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(2))));
+                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(3))));
+                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(4))));
+            }
+
+            await Task.WhenAll(tasks);
+            foreach (var task in tasks.Where(task => task.IsFaulted))
+                Debug.WriteLine(task.Exception);
+        }
+
+        private static DataSumarized GenerateMetricsAsync(List<CSVFileResult> repositorios)
+        {
+            var contador = 0;
             foreach (var repo in repositorios)
             {
                 // Clone Repository
@@ -178,8 +212,9 @@ namespace lab_02
                 DeleteFolder(repo);
                 ++contador;
             }
-        }
 
+            return new DataSumarized();
+        }
         private static bool GitClone(CSVFileResult repositorio)
         {
             try
