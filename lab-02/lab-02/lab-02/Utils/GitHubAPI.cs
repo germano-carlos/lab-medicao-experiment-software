@@ -13,8 +13,10 @@ namespace lab_02.Utils
 
         public static T Request<T>(string query)
         {
-            JObject j = new JObject();
-            j["query"] = query;
+            var j = new JObject
+            {
+                ["query"] = query
+            };
             try
             {
                 var client = new RestClient(_url);

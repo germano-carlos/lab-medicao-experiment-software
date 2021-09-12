@@ -10,9 +10,6 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using lab_02.Entities;
 using lab_02.Utils;
-using LibGit2Sharp;
-using Microsoft.CSharp.RuntimeBinder;
-using Newtonsoft.Json;
 
 namespace lab_02
 {
@@ -157,10 +154,10 @@ namespace lab_02
             return csv.GetRecords<CSVFileResult>().ToList();
         }
 
-        public static async Task Sumarizacao(int? indexOf = null, int? specificElement = null)
+        public static async Task Sumarizacao(int? indexOf = null, int? specificElement = null, bool tryAgain = false)
         {
             var repositorios = LerCSV();
-            var tasks = new List<Task<DataSumarized>>();
+            var tasks = new List<Task<List<SumaryResult>>>();
             var data = new List<List<CSVFileResult>>();
 
             if (indexOf.HasValue)
@@ -170,25 +167,25 @@ namespace lab_02
             }
             else if (specificElement.HasValue)
             {
-                repositorios = new List<CSVFileResult> { repositorios.ElementAt(specificElement.Value) };
-                tasks.Add(Task.Run(() => GenerateMetricsAsync(repositorios)));
+                var repositorios1 = new List<CSVFileResult> { repositorios.ElementAt(specificElement.Value)};
+                tasks.Add(Task.Run(() => GenerateMetricsAsync(repositorios1,1)));
             }
             else
             {
                 if(repositorios.Count is < 1000 or > 1000)
                     throw new Exception("É necessário possuir exatamente 1000 repositórios para realização da análise");
 
-                data.Add(repositorios.GetRange(0,200));
-                data.Add(repositorios.GetRange(200,200));
-                data.Add(repositorios.GetRange(400,200));
-                data.Add(repositorios.GetRange(600,200));
-                data.Add(repositorios.GetRange(800,200));
-            
-                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(0))));
-                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(1))));
-                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(2))));
-                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(3))));
-                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(4))));
+                data.Add(repositorios.GetRange(18,193));
+                data.Add(repositorios.GetRange(279,142));
+                data.Add(repositorios.GetRange(459,195));
+                data.Add(repositorios.GetRange(663,187));
+                data.Add(repositorios.GetRange(806,195));
+        
+                //tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(0), 1, tryAgain)));
+                //tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(1), 2, tryAgain)));
+                //tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(2), 3, tryAgain)));
+                //tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(3), 4, tryAgain)));
+                //tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(4), 5, tryAgain)));
             }
 
             await Task.WhenAll(tasks);
@@ -196,24 +193,41 @@ namespace lab_02
                 Debug.WriteLine(task.Exception);
         }
 
-        private static DataSumarized GenerateMetricsAsync(List<CSVFileResult> repositorios)
+        private static List<SumaryResult> GenerateMetricsAsync(List<CSVFileResult> repositorios, int? taskId = null, bool tryAgain = false)
         {
-            var contador = 0;
-            foreach (var repo in repositorios)
+            try
             {
-                // Clone Repository
-                if (!GitClone(repo))
-                    throw new Exception($"Não foi possível Clonar repositório: [{repo.RepositoryOwner} - {contador}]");
-                //Execute Jar File
-                if (!ExecuteJarFile(repo))
-                    throw new Exception($"Não foi possível Gerar as Métricas para este repositório: [{repo.RepositoryOwner} - {contador}]");
+                var listRepositorySumarized = new List<SumaryResult>(); 
+                var contador = 0;
+                foreach (var repo in repositorios)
+                {
+                    // Clone Repository
+                    if (!GitClone(repo))
+                        throw new Exception($"Não foi possível Clonar repositório: [{repo.RepositoryOwner} - {contador}]");
+                    //Execute Jar File
+                    if (!ExecuteJarFile(repo, taskId))
+                        throw new Exception($"Não foi possível Gerar as Métricas para este repositório: [{repo.RepositoryOwner} - {contador}]");
+                    // Delete Folder
+                    DeleteFolder(repo);
+                
+                    // Generate Data from CK - CSV
+                    List<DataSumarized> csvGenerated = ReadCSVGenerated(taskId);
+                    var isFirst = contador == 0 && !tryAgain;
+                    var result = ProcessCSVData(csvGenerated, repo.RepositoryOwner);
+                    listRepositorySumarized.Add(result);
+                    CreateCSVResult(result, isFirst, taskId);
+                    ++contador;
+                }
 
-                // Delete Folder
-                DeleteFolder(repo);
-                ++contador;
+                return listRepositorySumarized;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"A Thread [{taskId ?? -1}] não foi concluída com sucesso !");
+                Debug.WriteLine(e.Message);
             }
 
-            return new DataSumarized();
+            return null;
         }
         private static bool GitClone(CSVFileResult repositorio)
         {
@@ -225,9 +239,9 @@ namespace lab_02
                 var parent = Directory.GetParent(Directory.GetCurrentDirectory());
                 var directory = parent?.Parent?.Parent?.FullName;
 
-                string pathToSave = $"{directory}\\repositorios\\{repositorio.RepositoryOwner.Split('/').Last()}";
+                var pathToSave = $"{directory}\\repositorios\\{repositorio.RepositoryOwner.Split('/').Last()}";
 
-                Process process = new Process();
+                var process = new Process();
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.FileName = "git";
                 process.StartInfo.Arguments = $"clone {repositorio.RepositoryClone} {pathToSave}";
@@ -245,18 +259,18 @@ namespace lab_02
             }
         }
 
-        private static bool ExecuteJarFile(CSVFileResult repositorio)
+        private static bool ExecuteJarFile(CSVFileResult repositorio, int? taskId)
         {
             try
             {
                 var parent = Directory.GetParent(Directory.GetCurrentDirectory());
                 var directory = parent?.Parent?.Parent?.FullName;
 
-                string jarFile = $"{directory}\\ck-0.6.5-SNAPSHOT-jar-with-dependencies.jar";
-                string repository = $"{directory}\\repositorios\\{repositorio.RepositoryOwner.Split('/').Last()}";
-                string destination = $"{directory}\\metrics\\metrics";
+                var jarFile = $"{directory}\\ck-0.6.5-SNAPSHOT-jar-with-dependencies.jar";
+                var repository = $"{directory}\\repositorios\\{repositorio.RepositoryOwner.Split('/').Last()}";
+                var destination = $"{directory}\\metrics\\metrics{(taskId.HasValue ? $"-{taskId}" : "")}";
 
-                Process process = new Process();
+                var process = new Process();
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.FileName = "java";
                 process.StartInfo.Arguments = $"-jar {jarFile} {repository} true 0 false {destination}";
@@ -281,7 +295,7 @@ namespace lab_02
                 var parent = Directory.GetParent(Directory.GetCurrentDirectory());
                 var directory = parent?.Parent?.Parent?.FullName;
 
-                var dir = new DirectoryInfo($"{directory}\\repositorios\\") { Attributes = FileAttributes.Normal };;
+                var dir = new DirectoryInfo($"{directory}\\repositorios\\{repositorio.RepositoryOwner.Split('/').Last()}") { Attributes = FileAttributes.Normal };;
                 foreach (var info in dir.GetFileSystemInfos("*", SearchOption.AllDirectories))
                 {
                     info.Attributes = FileAttributes.Normal;
@@ -293,6 +307,82 @@ namespace lab_02
             catch (IOException ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+
+        private static List<DataSumarized> ReadCSVGenerated(int? taskId)
+        {
+            var parent = Directory.GetParent(Directory.GetCurrentDirectory());
+            var directory = parent?.Parent?.Parent?.FullName;
+
+            var destination = $"{directory}\\metrics\\metrics{(taskId.HasValue ? $"-{taskId}" : "")}class";
+            using var reader = new StreamReader($"{destination}.csv");
+            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            return csv.GetRecords<DataSumarized>().ToList();
+        }
+
+        private static SumaryResult ProcessCSVData(List<DataSumarized> csvGenerated, string repositoryName)
+        {
+            var cbo = new List<double>(); 
+            var cboModified = new List<double>(); 
+            var dit = new List<double>();
+            var lcom = new List<double>(); 
+            var lcom2 = new List<double>(); 
+            long loc = 0;
+
+            foreach (var data in csvGenerated)
+            {
+                cbo.Add(data.Cbo);
+                cboModified.Add(data.CboModified);
+                dit.Add(data.Dit);
+                lcom.Add(data.Lcom);
+                lcom2.Add(data.Lcom2);
+                loc += data.Loc;
+            }
+
+            var result = new SumaryResult()
+            {
+                RepositoryName = repositoryName,
+                Cbo = cbo.Count > 0 ? MathHelper.Median(cbo.ToArray()) : 0,
+                CboModified = cboModified.Count > 0 ? MathHelper.Median(cboModified.ToArray()) : 0,
+                Dit = dit.Count > 0 ? MathHelper.Median(dit.ToArray()) : 0,
+                Lcom = lcom.Count > 0 ? MathHelper.Median(lcom.ToArray()) : 0,
+                Lcom2 = lcom2.Count > 0 ? MathHelper.Median(lcom2.ToArray()) : 0,
+                Loc = loc
+            };
+            
+            return result;
+        }
+        
+        private static void CreateCSVResult(SumaryResult register, bool isFirst, int? taskId)
+        {
+            var parent = Directory.GetParent(Directory.GetCurrentDirectory());
+            var directory = parent?.Parent?.Parent?.FullName;
+            var file = $"{directory}\\csv-final-{(taskId.HasValue ? $"-{taskId}" : "")}.csv";
+
+            if (isFirst)
+            {
+                
+                using var writer = new StreamWriter(file);
+                using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+                csv.WriteHeader<SumaryResult>();
+                csv.NextRecord();
+                csv.WriteRecord(register);
+                csv.NextRecord();
+
+                return;
+            }
+
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                HasHeaderRecord = false,
+            };
+            using var stream = File.Open(file, FileMode.Append);
+            {
+                using var writer = new StreamWriter(stream);
+                using var csv = new CsvWriter(writer, config);
+                csv.WriteRecord(register);
+                csv.NextRecord();
             }
         }
     }

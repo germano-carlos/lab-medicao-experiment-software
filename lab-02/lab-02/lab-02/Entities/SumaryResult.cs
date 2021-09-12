@@ -2,7 +2,12 @@
 {
     public class SumaryResult
     {
-        public int contador { get; set; }
-        public string name { get; set; }
+        public double Cbo {get;set;}
+        public double CboModified {get;set;}
+        public double Dit {get;set;}
+        public double Lcom {get;set;}
+        public double Lcom2 {get;set;}
+        public long Loc {get;set;}
+        public string RepositoryName {get;set;}
     }
 }
