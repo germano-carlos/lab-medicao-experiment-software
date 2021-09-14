@@ -4,12 +4,14 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration;
 using lab_02.Entities;
 using lab_02.Utils;
+using Newtonsoft.Json;
 
 namespace lab_02
 {
@@ -159,7 +161,8 @@ namespace lab_02
             var repositorios = LerCSV();
             var tasks = new List<Task<List<SumaryResult>>>();
             var data = new List<List<CSVFileResult>>();
-
+            ValidaDuplicatas();
+            
             if (indexOf.HasValue)
             {
                 repositorios = repositorios.GetRange(indexOf.Value, repositorios.Count - indexOf.Value);
@@ -175,17 +178,17 @@ namespace lab_02
                 if(repositorios.Count is < 1000 or > 1000)
                     throw new Exception("É necessário possuir exatamente 1000 repositórios para realização da análise");
 
-                data.Add(repositorios.GetRange(18,193));
-                data.Add(repositorios.GetRange(279,142));
-                data.Add(repositorios.GetRange(459,195));
-                data.Add(repositorios.GetRange(663,187));
-                data.Add(repositorios.GetRange(806,195));
+                data.Add(repositorios.GetRange(62,142));
+                data.Add(repositorios.GetRange(950,50));
+                data.Add(repositorios.GetRange(537,115));
+                data.Add(repositorios.GetRange(786,136));
+                data.Add(repositorios.GetRange(896,56));
         
-                //tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(0), 1, tryAgain)));
-                //tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(1), 2, tryAgain)));
-                //tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(2), 3, tryAgain)));
-                //tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(3), 4, tryAgain)));
-                //tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(4), 5, tryAgain)));
+                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(0), 1, tryAgain)));
+                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(1), 2, tryAgain)));
+                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(2), 3, tryAgain)));
+                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(3), 4, tryAgain)));
+                tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(4), 5, tryAgain)));
             }
 
             await Task.WhenAll(tasks);
@@ -319,6 +322,46 @@ namespace lab_02
             using var reader = new StreamReader($"{destination}.csv");
             using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
             return csv.GetRecords<DataSumarized>().ToList();
+        }
+        
+        private static List<SumaryResult> ReadFinalCSVGenerated(int? taskId)
+        {
+            var parent = Directory.GetParent(Directory.GetCurrentDirectory());
+            var directory = parent?.Parent?.Parent?.FullName;
+
+            var destination = $"{directory}\\csv-final-{(taskId.HasValue ? $"-{taskId}" : "")}.csv";
+            using var reader = new StreamReader($"{destination}");
+            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            return csv.GetRecords<SumaryResult>().ToList();
+        }
+
+        private static void ValidaDuplicatas()
+        {
+            var csvGenerated2 = ReadFinalCSVGenerated(1);
+            var csvGenerated3 = ReadFinalCSVGenerated(2);
+            var csvGenerated4 = ReadFinalCSVGenerated(3);
+            var csvGenerated5 = ReadFinalCSVGenerated(4);
+            var csvGenerated6 = ReadFinalCSVGenerated(5);
+
+            var x = new List<SumaryResult>();
+            x.AddRange(csvGenerated2);
+            x.AddRange(csvGenerated3);
+            x.AddRange(csvGenerated4);
+            x.AddRange(csvGenerated5);
+            x.AddRange(csvGenerated6);
+
+            var dictionary = new Dictionary<string, int>();
+            foreach (var repo in x)
+            {
+                if (!dictionary.ContainsKey(repo.RepositoryName))
+                    dictionary.Add(repo.RepositoryName, 1);
+                else
+                    dictionary[repo.RepositoryName]++;
+            }
+
+            var list = dictionary.Where(s => s.Value > 1);
+            Debug.WriteLine(JsonConvert.SerializeObject(list, Formatting.Indented));
+            Debug.WriteLine($"Possui um total de {list.Count()} elementos repetidos");
         }
 
         private static SumaryResult ProcessCSVData(List<DataSumarized> csvGenerated, string repositoryName)
