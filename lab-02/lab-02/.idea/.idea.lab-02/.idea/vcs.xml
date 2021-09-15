@@ -7,12 +7,17 @@
     <mapping directory="$PROJECT_DIR$/lab-02/repositorios/alluxio" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lab-02/repositorios/androidx" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lab-02/repositorios/aws-sdk-java" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lab-02/repositorios/camel" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lab-02/repositorios/cas" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lab-02/repositorios/cw-omnibus" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lab-02/repositorios/elasticsearch" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lab-02/repositorios/ghidra" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lab-02/repositorios/groovy" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lab-02/repositorios/incubator-eventmesh" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lab-02/repositorios/jackson-databind" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lab-02/repositorios/jdk" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lab-02/repositorios/jersey" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lab-02/repositorios/reactor-core" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lab-02/repositorios/spring-boot" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lab-02/repositorios/spring-framework" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lab-02/repositorios/tutorials" vcs="Git" />

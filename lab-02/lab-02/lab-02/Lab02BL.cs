@@ -101,7 +101,7 @@ namespace lab_02
         {
             var parent = Directory.GetParent(Directory.GetCurrentDirectory());
             var directory = parent?.Parent?.Parent?.FullName;
-            string file = $"{directory}\\csv-repository-files.csv";
+            string file = $"{directory}\\csv-repository-files2.csv";
 
             if (isFirst)
             {
@@ -175,14 +175,16 @@ namespace lab_02
             }
             else
             {
-                if(repositorios.Count is < 1000 or > 1000)
+                if(repositorios.Count > 1000)
                     throw new Exception("É necessário possuir exatamente 1000 repositórios para realização da análise");
 
-                data.Add(repositorios.GetRange(62,142));
-                data.Add(repositorios.GetRange(950,50));
-                data.Add(repositorios.GetRange(537,115));
-                data.Add(repositorios.GetRange(786,136));
-                data.Add(repositorios.GetRange(896,56));
+                var quantidadePerThread = repositorios.Count / 5;
+                
+                data.Add(repositorios.GetRange(0, quantidadePerThread));
+                data.Add(repositorios.GetRange(69,quantidadePerThread));
+                data.Add(repositorios.GetRange(138,quantidadePerThread));
+                data.Add(repositorios.GetRange(207,quantidadePerThread));
+                data.Add(repositorios.GetRange(276,quantidadePerThread));
         
                 tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(0), 1, tryAgain)));
                 tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(1), 2, tryAgain)));
@@ -200,16 +202,21 @@ namespace lab_02
         {
             try
             {
+                List<string> skip = new List<string>() { "jdk", "Recaf", "cw-omnibus", "camel", "cas", "elasticsearch" };
                 var listRepositorySumarized = new List<SumaryResult>(); 
                 var contador = 0;
                 foreach (var repo in repositorios)
                 {
+                    var name = repo.RepositoryOwner.Split('/').Last();
+                    if(skip.Contains(name))
+                        continue;
+
                     // Clone Repository
                     if (!GitClone(repo))
-                        throw new Exception($"Não foi possível Clonar repositório: [{repo.RepositoryOwner} - {contador}]");
+                        continue;
                     //Execute Jar File
                     if (!ExecuteJarFile(repo, taskId))
-                        throw new Exception($"Não foi possível Gerar as Métricas para este repositório: [{repo.RepositoryOwner} - {contador}]");
+                        continue;
                     // Delete Folder
                     DeleteFolder(repo);
                 
@@ -335,6 +342,18 @@ namespace lab_02
             return csv.GetRecords<SumaryResult>().ToList();
         }
 
+        private static List<SumaryResult> ReadFinalCSVGeneratedOt()
+        {
+            var parent = Directory.GetParent(Directory.GetCurrentDirectory());
+            var directory = parent?.Parent?.Parent?.FullName;
+
+            var destination = $"{directory}\\corretos.csv";
+            using var reader = new StreamReader($"{destination}");
+            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            return csv.GetRecords<SumaryResult>().ToList();
+        }
+        
+
         private static void ValidaDuplicatas()
         {
             var csvGenerated2 = ReadFinalCSVGenerated(1);
@@ -342,15 +361,43 @@ namespace lab_02
             var csvGenerated4 = ReadFinalCSVGenerated(3);
             var csvGenerated5 = ReadFinalCSVGenerated(4);
             var csvGenerated6 = ReadFinalCSVGenerated(5);
-
+            var csvGenerated7 = ReadFinalCSVGeneratedOt();
+            
             var x = new List<SumaryResult>();
             x.AddRange(csvGenerated2);
             x.AddRange(csvGenerated3);
             x.AddRange(csvGenerated4);
             x.AddRange(csvGenerated5);
             x.AddRange(csvGenerated6);
+            
 
-            var dictionary = new Dictionary<string, int>();
+            var z = new List<SumaryResult>();
+            z.AddRange(csvGenerated7);
+
+            var names = (from repocorretos in z select repocorretos.RepositoryName).ToList();
+            var namesErrados = (from repoerrados in x select repoerrados.RepositoryName).ToList();
+
+            var listofparam = names.Where(name => !namesErrados.Contains(name)).ToList();
+            var results = new List<CSVFileResult>();
+
+            foreach (var list in listofparam)
+            {
+                results.Add(new CSVFileResult()
+                {
+                    RepositoryAge = 0,
+                    RepositoyCreatedAt = DateTime.Now,
+                    ReleasesCount = 0,
+                    PrimaryLanguage = "",
+                    RepositoryUrl = "",
+                    RepositoryClone = $"https://github.com/{list}.git",
+                    RepositoryOwner = list,
+                    StarsCount = 0,
+                    SourceLinesOfCode = null
+                });
+            }
+            
+            CriaCSV(results, true);
+            /*var dictionary = new Dictionary<string, int>();
             foreach (var repo in x)
             {
                 if (!dictionary.ContainsKey(repo.RepositoryName))
@@ -361,7 +408,7 @@ namespace lab_02
 
             var list = dictionary.Where(s => s.Value > 1);
             Debug.WriteLine(JsonConvert.SerializeObject(list, Formatting.Indented));
-            Debug.WriteLine($"Possui um total de {list.Count()} elementos repetidos");
+            Debug.WriteLine($"Possui um total de {list.Count()} elementos repetidos");*/
         }
 
         private static SumaryResult ProcessCSVData(List<DataSumarized> csvGenerated, string repositoryName)

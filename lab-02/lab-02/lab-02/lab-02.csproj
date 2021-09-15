@@ -13,4 +13,8 @@
       <PackageReference Include="RestSharp" Version="106.12.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="csv-repository-files2.csv" />
+    </ItemGroup>
+
 </Project>
