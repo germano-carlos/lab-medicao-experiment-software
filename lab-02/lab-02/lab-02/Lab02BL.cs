@@ -66,7 +66,6 @@ namespace lab_02
 
             return GitHubAPI.Request<GitHubResult>(query);
         }
-
         public static List<Nodes> BuscaRepositoriosPaginados(int pageSize, int? qntElements = null,
             int? pageAmount = null)
         {
@@ -96,7 +95,6 @@ namespace lab_02
             
             return repositorios;
         }
-
         private static void CriaCSV(List<CSVFileResult> repositorios, bool isFirst)
         {
             var parent = Directory.GetParent(Directory.GetCurrentDirectory());
@@ -123,7 +121,6 @@ namespace lab_02
                 csv.WriteRecords(repositorios);
             }
         }
-
         private static List<CSVFileResult> ProcessarDados(List<Nodes> repositorios)
         {
             var results = new List<CSVFileResult>();
@@ -145,8 +142,7 @@ namespace lab_02
 
             return results;
         }
-
-        public static List<CSVFileResult> LerCSV()
+        private static List<CSVFileResult> LerCSV()
         {
             var parent = Directory.GetParent(Directory.GetCurrentDirectory());
             var directory = parent?.Parent?.Parent?.FullName;
@@ -155,92 +151,12 @@ namespace lab_02
             
             return csv.GetRecords<CSVFileResult>().ToList();
         }
-        private static void RealizaDepara()
-        {
-            var csvGenerated2 = ReadFinalCSVGenerated(1);
-            var csvGenerated3 = ReadFinalCSVGenerated(2);
-            var csvGenerated4 = ReadFinalCSVGenerated(3);
-            var csvGenerated5 = ReadFinalCSVGenerated(4);
-            var csvGenerated6 = ReadFinalCSVGenerated(5);
-
-            var csvGenerated7 = ReadFinalCSVGeneratedOt();
-
-            var csvGenerated8 = LerCSV();
-
-            var x = new List<SumaryResult>();
-            x.AddRange(csvGenerated2);
-            x.AddRange(csvGenerated3);
-            x.AddRange(csvGenerated4);
-            x.AddRange(csvGenerated5);
-            x.AddRange(csvGenerated6);
-
-            var z = new List<SumaryT>();
-            z.AddRange(csvGenerated7);
-
-            var w = LerCSV();
-
-            var listanomes = x.Select(n => n.RepositoryName);
-            var listanomescorretos = z.Select(n => n.RepositoryName);
-            var listainicial = w.Select(n => n.RepositoryOwner);
-
-            var listanovaasercriada = new List<SumaryT>();
-            foreach(var element in z)
-            {
-                if(listainicial.Contains(element.RepositoryName))
-                {
-                    var summaryLocal = new SumaryT();
-                    var elementListaTotal = w.Where(s => s.RepositoryOwner.Split("/").Last() == element.RepositoryName).FirstOrDefault();
-                    if (listanomes.Contains(element.RepositoryName))
-                    {
-                        var elementListaThread = x.Where(s => s.RepositoryName == element.RepositoryName).FirstOrDefault();
-                        summaryLocal.RepositoryName = element.RepositoryName;
-                        summaryLocal.Age = elementListaTotal.RepositoryAge;
-                        summaryLocal.Dit = elementListaThread.Dit;
-                        summaryLocal.Cbo = elementListaThread.Cbo;
-                        summaryLocal.Lcom2 = elementListaThread.Lcom2;
-                        summaryLocal.Stars = elementListaTotal.StarsCount;
-
-                        listanovaasercriada.Add(summaryLocal);
-                        continue;
-                    }
-
-                    summaryLocal.RepositoryName = element.RepositoryName;
-                    summaryLocal.Age = elementListaTotal.RepositoryAge;
-                    summaryLocal.Dit = element.Dit;
-                    summaryLocal.Cbo = element.Cbo;
-                    summaryLocal.Lcom2 = element.Lcom2;
-                    summaryLocal.Stars = elementListaTotal.StarsCount;
-
-
-                    listanovaasercriada.Add(summaryLocal);
-                }
-                else if (listanomes.Contains(element.RepositoryName))
-                {
-                    var elementListaThread = x.Where(s => s.RepositoryName == element.RepositoryName).FirstOrDefault();
-                    summaryLocal.RepositoryName = element.RepositoryName;
-                    summaryLocal.Age = elementListaTotal.RepositoryAge;
-                    summaryLocal.Dit = elementListaThread.Dit;
-                    summaryLocal.Cbo = elementListaThread.Cbo;
-                    summaryLocal.Lcom2 = elementListaThread.Lcom2;
-                    summaryLocal.Stars = elementListaTotal.StarsCount;
-
-                    listanovaasercriada.Add(summaryLocal);
-                    continue;
-                }
-            }
-
-
-        }
-
         public static async Task Sumarizacao(int? indexOf = null, int? specificElement = null, bool tryAgain = false)
         {
             var repositorios = LerCSV();
-
-            RealizaDepara();
-
+            
             var tasks = new List<Task<List<SumaryResult>>>();
             var data = new List<List<CSVFileResult>>();
-            ValidaDuplicatas();
             
             if (indexOf.HasValue)
             {
@@ -270,13 +186,15 @@ namespace lab_02
                 tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(2), 3, tryAgain)));
                 tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(3), 4, tryAgain)));
                 tasks.Add(Task.Run(() => GenerateMetricsAsync(data.ElementAt(4), 5, tryAgain)));
+                
             }
 
             await Task.WhenAll(tasks);
             foreach (var task in tasks.Where(task => task.IsFaulted))
                 Debug.WriteLine(task.Exception);
-        }
 
+            CriaArquivoFinal();
+        }
         private static List<SumaryResult> GenerateMetricsAsync(List<CSVFileResult> repositorios, int? taskId = null, bool tryAgain = false)
         {
             try
@@ -347,7 +265,6 @@ namespace lab_02
                 return false;
             }
         }
-
         private static bool ExecuteJarFile(CSVFileResult repositorio, int? taskId)
         {
             try
@@ -376,7 +293,6 @@ namespace lab_02
                 return false;
             }
         }
-
         private static void DeleteFolder(CSVFileResult repositorio)
         {
             try
@@ -398,7 +314,6 @@ namespace lab_02
                 throw new Exception(ex.Message);
             }
         }
-
         private static List<DataSumarized> ReadCSVGenerated(int? taskId)
         {
             var parent = Directory.GetParent(Directory.GetCurrentDirectory());
@@ -409,7 +324,6 @@ namespace lab_02
             using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
             return csv.GetRecords<DataSumarized>().ToList();
         }
-        
         private static List<SumaryResult> ReadFinalCSVGenerated(int? taskId)
         {
             var parent = Directory.GetParent(Directory.GetCurrentDirectory());
@@ -420,62 +334,10 @@ namespace lab_02
             using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
             return csv.GetRecords<SumaryResult>().ToList();
         }
-
-        private static List<SumaryT> ReadFinalCSVGeneratedOt()
+        private static void ValidaDuplicatas(List<SumaryT> lista)
         {
-            var parent = Directory.GetParent(Directory.GetCurrentDirectory());
-            var directory = parent?.Parent?.Parent?.FullName;
-
-            var destination = $"{directory}\\novos-corretos.csv";
-            using var reader = new StreamReader($"{destination}");
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-            return csv.GetRecords<SumaryT>().ToList();
-        }
-        private static void ValidaDuplicatas()
-        {
-            var csvGenerated2 = ReadFinalCSVGenerated(1);
-            var csvGenerated3 = ReadFinalCSVGenerated(2);
-            var csvGenerated4 = ReadFinalCSVGenerated(3);
-            var csvGenerated5 = ReadFinalCSVGenerated(4);
-            var csvGenerated6 = ReadFinalCSVGenerated(5);
-            var csvGenerated7 = ReadFinalCSVGeneratedOt();
-            
-            var x = new List<SumaryResult>();
-            x.AddRange(csvGenerated2);
-            x.AddRange(csvGenerated3);
-            x.AddRange(csvGenerated4);
-            x.AddRange(csvGenerated5);
-            x.AddRange(csvGenerated6);
-            
-
-            /*var z = new List<SumaryResult>();
-            z.AddRange(csvGenerated7);
-
-            var names = (from repocorretos in z select repocorretos.RepositoryName).ToList();
-            var namesErrados = (from repoerrados in x select repoerrados.RepositoryName).ToList();
-
-            var listofparam = names.Where(name => !namesErrados.Contains(name)).ToList();
-            var results = new List<CSVFileResult>();
-
-            foreach (var list in listofparam)
-            {
-                results.Add(new CSVFileResult()
-                {
-                    RepositoryAge = 0,
-                    RepositoyCreatedAt = DateTime.Now,
-                    ReleasesCount = 0,
-                    PrimaryLanguage = "",
-                    RepositoryUrl = "",
-                    RepositoryClone = $"https://github.com/{list}.git",
-                    RepositoryOwner = list,
-                    StarsCount = 0,
-                    SourceLinesOfCode = null
-                });
-            }
-            
-            CriaCSV(results, true);*/
-            /*var dictionary = new Dictionary<string, int>();
-            foreach (var repo in x)
+            var dictionary = new Dictionary<string, int>();
+            foreach (var repo in lista)
             {
                 if (!dictionary.ContainsKey(repo.RepositoryName))
                     dictionary.Add(repo.RepositoryName, 1);
@@ -485,9 +347,8 @@ namespace lab_02
 
             var list = dictionary.Where(s => s.Value > 1);
             Debug.WriteLine(JsonConvert.SerializeObject(list, Formatting.Indented));
-            Debug.WriteLine($"Possui um total de {list.Count()} elementos repetidos");*/
+            Debug.WriteLine($"Possui um total de {list.Count()} elementos repetidos");
         }
-
         private static SumaryResult ProcessCSVData(List<DataSumarized> csvGenerated, string repositoryName)
         {
             var cbo = new List<double>(); 
@@ -520,12 +381,11 @@ namespace lab_02
             
             return result;
         }
-        
         private static void CreateCSVResult(SumaryResult register, bool isFirst, int? taskId)
         {
             var parent = Directory.GetParent(Directory.GetCurrentDirectory());
             var directory = parent?.Parent?.Parent?.FullName;
-            var file = $"{directory}\\csv-final-{(taskId.HasValue ? $"-{taskId}" : "")}.csv";
+            var file = $"{directory}\\csv-final{(taskId.HasValue ? $"-{taskId}" : "")}.csv";
 
             if (isFirst)
             {
@@ -551,6 +411,64 @@ namespace lab_02
                 csv.WriteRecord(register);
                 csv.NextRecord();
             }
+        }
+        private static void CreateCSVFinalResult(List<SumaryT> register)
+        {
+            var parent = Directory.GetParent(Directory.GetCurrentDirectory());
+            var directory = parent?.Parent?.Parent?.FullName;
+            var file = $"{directory}\\csv-final.csv";
+            
+            using var writer = new StreamWriter(file);
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+            csv.WriteRecords(register);
+
+        }
+        private static void CriaArquivoFinal()
+        {
+            var csvGenerated2 = ReadFinalCSVGenerated(1);
+            var csvGenerated3 = ReadFinalCSVGenerated(2);
+            var csvGenerated4 = ReadFinalCSVGenerated(3);
+            var csvGenerated5 = ReadFinalCSVGenerated(4);
+            var csvGenerated6 = ReadFinalCSVGenerated(5);
+
+            var csvGenerated8 = LerCSV();
+
+            var x = new List<SumaryResult>();
+            x.AddRange(csvGenerated2);
+            x.AddRange(csvGenerated3);
+            x.AddRange(csvGenerated4);
+            x.AddRange(csvGenerated5);
+            x.AddRange(csvGenerated6);
+
+            var w = LerCSV();
+
+            var listanomes = x.Select(n => n.RepositoryName);
+            var listainicial = w.Select(n => n.RepositoryOwner);
+
+            var listanovaasercriada = new List<SumaryT>();
+
+            foreach (var repo in w)
+            {
+                if(listanomes.Contains(repo.RepositoryOwner))
+                {
+                    var summaryLocal = new SumaryT();
+                    var elementListaTotal = x.FirstOrDefault(s => s.RepositoryName == repo.RepositoryOwner);
+
+                    summaryLocal.RepositoryName = repo.RepositoryOwner;
+                    summaryLocal.Age = repo.RepositoryAge.ToString();
+                    summaryLocal.Dit = elementListaTotal.Dit.ToString();
+                    summaryLocal.Cbo = elementListaTotal.Cbo.ToString();
+                    summaryLocal.Lcom2 = elementListaTotal.Lcom2.ToString();
+                    summaryLocal.Stars = repo.StarsCount.ToString();
+                    summaryLocal.ReleasesCount = repo.ReleasesCount.ToString();
+
+                    listanovaasercriada.Add(summaryLocal);
+                }
+            }
+
+            ValidaDuplicatas(listanovaasercriada);
+            CreateCSVFinalResult(listanovaasercriada);
+
         }
     }
 }
